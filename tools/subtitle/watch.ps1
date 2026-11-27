@@ -9,7 +9,7 @@ $mutex = $null
 try { $mutex = New-Object System.Threading.Mutex($false, 'Local\ytsub-watcher'); if (-not $mutex.WaitOne(0)) { exit } } catch { $mutex = $null }
 try {
 $state = Join-Path $env:USERPROFILE 'yt-sub'
-$doneFile = Join-Path $state 'done.txt'
+$doneFile = Join-Path $state 'done2.txt'
 $src = Join-Path $env:USERPROFILE 'OneDrive\Desktop\승리\쇼츠원본'
 $subDir = Join-Path $src '자막'; $clipDir = Join-Path $src 'clips'
 New-Item -ItemType Directory -Force $subDir, $clipDir | Out-Null
@@ -36,8 +36,8 @@ if (-not (Test-Path $req)) { exit }
 
 $done = @{}
 if (Test-Path $doneFile) { Get-Content $doneFile -Encoding UTF8 | ForEach-Object { $done[$_] = 1 } }
-$ID = '([A-Za-z0-9_-]{11})'
-$TM = '(\d{1,2}:\d{2}(?::\d{2})?)'
+$RxVid = '([A-Za-z0-9_-]{11})'
+$RxTime = '(\d{1,2}:\d{2}(?::\d{2})?)'
 
 function Make-Txt($vtt, $id, $title) {
   $out = New-Object System.Collections.Generic.List[string]
@@ -57,7 +57,8 @@ foreach ($raw in (Get-Content $req -Encoding UTF8)) {
   $line = $raw.Trim()
   if ($line -eq '' -or $line.StartsWith('#') -or $done.ContainsKey($line)) { continue }
   $ok = $false
-  if ($line -match "^sub\s+$ID$") {
+  if ($line -match "^sub\s+$RxVid$") {
+    if (Test-Path (Join-Path $res ($Matches[1] + '.txt'))) { continue }
     $id = $Matches[1]
     Set-Location $subDir
     Get-ChildItem -Path $subDir -Filter "$id.*" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
@@ -70,9 +71,10 @@ foreach ($raw in (Get-Content $req -Encoding UTF8)) {
       Set-Content -Path "$res\$id.txt" -Value (Make-Txt $vtt.FullName $id $title) -Encoding UTF8
       Copy-Item -Force $vtt.FullName "$res\$($vtt.Name)"
       Log "자막 완료 $id"; $ok = $true
-    } else { Log "자막 실패 $id (한국어 자막 없음 또는 잠시 막힘)" }
+    } else { Log "자막 실패 $id (한국어 자막 없음 또는 잠시 막힘)"; $ok = $true }
   }
-  elseif ($line -match "^clip\s+$ID\s+$TM-$TM\s+([0-9A-Za-z가-힣_-]{1,40})$") {
+  elseif ($line -match "^clip\s+$RxVid\s+$RxTime-$RxTime\s+([0-9A-Za-z가-힣_-]{1,40})$") {
+    if (Test-Path (Join-Path $res ($Matches[4] + '.mp4'))) { continue }
     $id = $Matches[1]; $a = $Matches[2]; $b = $Matches[3]; $name = $Matches[4]
     $outFile = Join-Path $clipDir "$name.mp4"
     Remove-Item -Force $outFile -ErrorAction SilentlyContinue
@@ -80,7 +82,7 @@ foreach ($raw in (Get-Content $req -Encoding UTF8)) {
       --download-sections "*$a-$b" --force-keyframes-at-cuts --merge-output-format mp4 `
       -o "$clipDir\$name.%(ext)s" "https://www.youtube.com/watch?v=$id" 2>$null | Out-Null
     if (Test-Path $outFile) { Copy-Item -Force $outFile "$res\$name.mp4"; Log "클립 완료 $name ($id $a-$b)"; $ok = $true }
-    else { Log "클립 실패 $name ($id $a-$b)" }
+    else { Log "클립 실패 $name ($id $a-$b)"; $ok = $true }
   }
   else { Log "형식이 안 맞아 건너뜀: $line"; $ok = $true }
   if ($ok) { Add-Content -Path $doneFile -Value $line -Encoding UTF8; $done[$line] = 1 }
