@@ -4,8 +4,9 @@
 #   clip 영상ID 01:44-02:33 이름    -> 그 구간만 mp4 클립
 # 다른 명령은 절대 실행하지 않음 (영상ID·시간·이름은 정해진 글자만 허용).
 $ErrorActionPreference = 'Continue'
-$mutex = New-Object System.Threading.Mutex($false, 'Global\ytsub-watcher')
-if (-not $mutex.WaitOne(0)) { exit }
+$errLog = Join-Path $env:USERPROFILE 'yt-sub\error.txt'
+$mutex = $null
+try { $mutex = New-Object System.Threading.Mutex($false, 'Local\ytsub-watcher'); if (-not $mutex.WaitOne(0)) { exit } } catch { $mutex = $null }
 try {
 $state = Join-Path $env:USERPROFILE 'yt-sub'
 $doneFile = Join-Path $state 'done.txt'
@@ -23,7 +24,8 @@ foreach ($r in $roots) {
   }
   if ($g) { break }
 }
-if (-not $g) { exit }
+if (-not $g) { Write-Host 'Google Drive folder not found'; Add-Content $errLog ((Get-Date).ToString() + ' drive not found') ; exit }
+Write-Host "Drive folder: $g"
 $box = Join-Path $g '자막자동'; $res = Join-Path $box '결과'
 New-Item -ItemType Directory -Force $box, $res | Out-Null
 $req = Join-Path $box '요청.txt'
@@ -83,4 +85,5 @@ foreach ($raw in (Get-Content $req -Encoding UTF8)) {
   else { Log "형식이 안 맞아 건너뜀: $line"; $ok = $true }
   if ($ok) { Add-Content -Path $doneFile -Value $line -Encoding UTF8; $done[$line] = 1 }
 }
-} finally { $mutex.ReleaseMutex() }
+} catch { Write-Host $_; Add-Content $errLog ((Get-Date).ToString() + ' ' + $_) } finally { if ($mutex) { try { $mutex.ReleaseMutex() } catch {} } }
+Write-Host 'watcher run finished'
