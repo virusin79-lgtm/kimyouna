@@ -23,7 +23,7 @@ start "" "%ProgramFiles%\Google\Drive File Stream\launch.bat" 2>nul
 pause
 echo.
 echo [4/4] 자동 받기 장치 + 바탕화면 아이콘 설치, 첫 실행
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$env:Path=[Environment]::GetEnvironmentVariable('Path','Machine')+';'+[Environment]::GetEnvironmentVariable('Path','User'); irm https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/392c903b307a07b3f0fd144fd5bccbf0f031711a/tools/subtitle/setup.ps1 | iex; irm https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/392c903b307a07b3f0fd144fd5bccbf0f031711a/tools/subtitle/setup_auto.ps1 | iex"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$env:Path=[Environment]::GetEnvironmentVariable('Path','Machine')+';'+[Environment]::GetEnvironmentVariable('Path','User'); irm https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/840b7ec4b19d61f511bdad98f6be2a70eb58fe98/tools/subtitle/setup.ps1 | iex; irm https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/840b7ec4b19d61f511bdad98f6be2a70eb58fe98/tools/subtitle/setup_auto.ps1 | iex"
 echo.
 echo ==== 끝! 초록색 OK 가 보이면 성공이에요. 이 화면을 캡처해서 클로드에게 보내 주세요. ====
 pause
