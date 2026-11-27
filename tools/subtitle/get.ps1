@@ -9,6 +9,9 @@ function Say($msg) { [System.Windows.Forms.MessageBox]::Show($msg, '자막받기
 
 $url = ''
 try { $url = (Get-Clipboard | Out-String).Trim() } catch {}
+# 지난번 자막 글이 아직 복사돼 있으면(새 주소를 복사 안 했으면) 링크로 쓰지 않음
+if ($url -match '^\[자막') { $url = '' }
+if ($url.Length -gt 300) { $url = '' }
 if ($url -notmatch '(youtube\.com|youtu\.be)') {
   Write-Host ''
   Write-Host '유튜브 링크를 먼저 복사한 뒤 다시 더블클릭해 주세요.' -ForegroundColor Yellow
@@ -27,7 +30,8 @@ Get-ChildItem -Path $dir -Filter "$id.*" -ErrorAction SilentlyContinue | Remove-
 
 $vtt = Get-ChildItem -Path $dir -Filter "$id*.vtt" -ErrorAction SilentlyContinue | Select-Object -First 1
 if (-not $vtt) {
-  Say '이 영상은 한국어 자막을 못 받았어요. (자막이 없거나 잠시 막힘) 몇 분 뒤 다시 하거나, 클로드에게 "자막 없음"이라고 알려 주세요.'; exit
+  Set-Clipboard -Value "[자막 실패] https://youtu.be/$id - 한국어 자막 없음 또는 잠시 막힘"
+  Say "이 영상($id)은 한국어 자막을 못 받았어요.`n`n채팅창에 그대로 Ctrl+V 해서 보내 주시면 클로드가 알아서 할게요."; exit
 }
 $title = ''
 if (Test-Path "$dir\$id.title.txt") { $title = (Get-Content "$dir\$id.title.txt" -Encoding UTF8 | Select-Object -First 1) }
@@ -48,4 +52,4 @@ foreach ($l in (Get-Content $vtt.FullName -Encoding UTF8)) {
 $text = $out -join "`r`n"
 Set-Content -Path "$dir\$id.txt" -Value $text -Encoding UTF8
 Set-Clipboard -Value $text
-Say "자막 복사 완료! ($($out.Count - 2)줄)`n`n클로드 채팅창을 누르고 Ctrl+V → 보내기만 하면 돼요."
+Say "자막 복사 완료! ($($out.Count - 2)줄)`n영상: $title`n`n클로드 채팅창을 누르고 Ctrl+V → 보내기만 하면 돼요."
