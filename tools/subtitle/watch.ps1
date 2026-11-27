@@ -15,9 +15,10 @@ New-Item -ItemType Directory -Force $subDir, $clipDir | Out-Null
 
 # 구글 드라이브 폴더 찾기
 $g = $null
-foreach ($d in (Get-PSDrive -PSProvider FileSystem)) {
+$roots = @((Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Root }) + $env:USERPROFILE)
+foreach ($r in $roots) {
   foreach ($n in @('내 드라이브', 'My Drive')) {
-    $p = Join-Path $d.Root $n
+    $p = Join-Path $r $n
     if (Test-Path $p) { $g = $p; break }
   }
   if ($g) { break }

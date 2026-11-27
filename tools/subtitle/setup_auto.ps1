@@ -13,7 +13,10 @@ Register-ScheduledTask -TaskName 'ytsub-watcher' -Action $act -Trigger $t1, $t2 
 $ok = $true
 if (-not (Get-Command yt-dlp -ErrorAction SilentlyContinue)) { Write-Host 'yt-dlp not found: winget install yt-dlp.yt-dlp' -ForegroundColor Red; $ok = $false }
 if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { Write-Host 'ffmpeg not found (clips need it): winget install Gyan.FFmpeg' -ForegroundColor Yellow }
-$gd = $false; foreach ($d in (Get-PSDrive -PSProvider FileSystem)) { if ((Test-Path (Join-Path $d.Root 'My Drive')) -or (Get-ChildItem $d.Root -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name.Length -eq 6 -and $_.Name.EndsWith([string][char]0xBE0C) })) { $gd = $true } }
-if (-not $gd) { Write-Host 'Google Drive app not found. Install: https://www.google.com/drive/download/' -ForegroundColor Red; $ok = $false }
+$naeDrive = -join ([char]0xB0B4, ' ', [char]0xB4DC, [char]0xB77C, [char]0xC774, [char]0xBE0C)
+$gd = $false
+$roots = @((Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Root }) + $env:USERPROFILE)
+foreach ($r in $roots) { if ((Test-Path (Join-Path $r 'My Drive')) -or (Test-Path (Join-Path $r $naeDrive))) { $gd = $true } }
+if (-not $gd) { Write-Host 'Google Drive folder not found. Open the Google Drive app from the Start menu, sign in, wait 1 minute, then run this line again.' -ForegroundColor Red; $ok = $false }
 if ($ok) { Write-Host 'OK! Auto subtitle is running (every 5 min).' -ForegroundColor Green }
 Start-ScheduledTask -TaskName 'ytsub-watcher'
