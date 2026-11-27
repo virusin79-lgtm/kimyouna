@@ -78,7 +78,7 @@ foreach ($raw in (Get-Content $req -Encoding UTF8)) {
     $id = $Matches[1]; $a = $Matches[2]; $b = $Matches[3]; $name = $Matches[4]
     $outFile = Join-Path $clipDir "$name.mp4"
     Remove-Item -Force $outFile -ErrorAction SilentlyContinue
-    & yt-dlp -q --no-warnings -f 'bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080]/b' `
+    & yt-dlp -q --no-warnings -f 'bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720]/b' `
       --download-sections "*$a-$b" --force-keyframes-at-cuts --merge-output-format mp4 `
       -o "$clipDir\$name.%(ext)s" "https://www.youtube.com/watch?v=$id" 2>$null | Out-Null
     if (Test-Path $outFile) { Copy-Item -Force $outFile "$res\$name.mp4"; Log "클립 완료 $name ($id $a-$b)"; $ok = $true }
