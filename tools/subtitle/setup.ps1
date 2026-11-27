@@ -1,5 +1,5 @@
 # One-time setup: installs the "jamak-badgi" (subtitle) shortcut on the Desktop. ASCII only on purpose.
-$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/claude/project-thread-jejtqi/tools/subtitle'
+$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/9d97c1ebe81dabfe63c0fd77209285fc6a6e442a/tools/subtitle'
 $home2 = Join-Path $env:USERPROFILE 'yt-sub'
 New-Item -ItemType Directory -Force $home2 | Out-Null
 Invoke-WebRequest -UseBasicParsing "$base/get.ps1" -OutFile (Join-Path $home2 'get.ps1')

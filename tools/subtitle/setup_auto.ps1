@@ -1,5 +1,5 @@
 # One-time setup for automatic subtitles/clips. ASCII only on purpose.
-$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/2f005f71888a1626c918a048ec24778e800b8ae4/tools/subtitle'
+$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/9d97c1ebe81dabfe63c0fd77209285fc6a6e442a/tools/subtitle'
 $dir = Join-Path $env:USERPROFILE 'yt-sub'
 New-Item -ItemType Directory -Force $dir | Out-Null
 Invoke-WebRequest -UseBasicParsing "$base/watch.ps1" -OutFile (Join-Path $dir 'watch.ps1')
@@ -27,4 +27,5 @@ if (-not $gd) {
   foreach ($k in 'HKCU:\Software\Google\DriveFS', 'HKLM:\SOFTWARE\Google\DriveFS') { if (Test-Path $k) { Get-ItemProperty $k | Select-Object * -ExcludeProperty PS* | Format-List | Out-String | Write-Host } }
 }
 if ($ok) { Write-Host 'OK! Auto subtitle is running (every 5 min).' -ForegroundColor Green }
-Start-ScheduledTask -TaskName 'ytsub-watcher'
+Write-Host 'First run now (may take a few minutes)...' -ForegroundColor Cyan
+& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $dir 'watch.ps1')
