@@ -1,5 +1,5 @@
 # One-time setup for automatic subtitles/clips. ASCII only on purpose.
-$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/claude/project-thread-jejtqi/tools/subtitle'
+$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/2f005f71888a1626c918a048ec24778e800b8ae4/tools/subtitle'
 $dir = Join-Path $env:USERPROFILE 'yt-sub'
 New-Item -ItemType Directory -Force $dir | Out-Null
 Invoke-WebRequest -UseBasicParsing "$base/watch.ps1" -OutFile (Join-Path $dir 'watch.ps1')
@@ -17,6 +17,14 @@ $naeDrive = -join ([char]0xB0B4, ' ', [char]0xB4DC, [char]0xB77C, [char]0xC774, 
 $gd = $false
 $roots = @((Get-PSDrive -PSProvider FileSystem | ForEach-Object { $_.Root }) + $env:USERPROFILE)
 foreach ($r in $roots) { if ((Test-Path (Join-Path $r 'My Drive')) -or (Test-Path (Join-Path $r $naeDrive))) { $gd = $true } }
-if (-not $gd) { Write-Host 'Google Drive folder not found. Open the Google Drive app from the Start menu, sign in, wait 1 minute, then run this line again.' -ForegroundColor Red; $ok = $false }
+if (-not $gd) {
+  $ok = $false
+  Write-Host 'Google Drive folder not found. Open the Google Drive app from the Start menu, sign in, wait 1 minute, then run this line again.' -ForegroundColor Red
+  Write-Host '--- check info (send a screenshot) ---' -ForegroundColor Yellow
+  $proc = Get-Process -Name GoogleDriveFS -ErrorAction SilentlyContinue
+  Write-Host ('Drive app running: ' + [bool]$proc)
+  foreach ($d in (Get-PSDrive -PSProvider FileSystem)) { Write-Host ('Drive ' + $d.Root + ' : ' + ((Get-ChildItem $d.Root -Directory -ErrorAction SilentlyContinue | Select-Object -First 6 -ExpandProperty Name) -join ', ')) }
+  foreach ($k in 'HKCU:\Software\Google\DriveFS', 'HKLM:\SOFTWARE\Google\DriveFS') { if (Test-Path $k) { Get-ItemProperty $k | Select-Object * -ExcludeProperty PS* | Format-List | Out-String | Write-Host } }
+}
 if ($ok) { Write-Host 'OK! Auto subtitle is running (every 5 min).' -ForegroundColor Green }
 Start-ScheduledTask -TaskName 'ytsub-watcher'
