@@ -1,5 +1,5 @@
 # One-time setup for automatic subtitles/clips. ASCII only on purpose.
-$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/9d97c1ebe81dabfe63c0fd77209285fc6a6e442a/tools/subtitle'
+$base = 'https://raw.githubusercontent.com/virusin79-lgtm/kimyouna/3b7a0d70dd289fdc5640d8a0bf5a486156818ea6/tools/subtitle'
 $dir = Join-Path $env:USERPROFILE 'yt-sub'
 New-Item -ItemType Directory -Force $dir | Out-Null
 Invoke-WebRequest -UseBasicParsing "$base/watch.ps1" -OutFile (Join-Path $dir 'watch.ps1')
